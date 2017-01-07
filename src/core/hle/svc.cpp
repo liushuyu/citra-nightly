@@ -849,6 +849,11 @@ static ResultCode CancelTimer(Kernel::Handle handle) {
 static void SleepThread(s64 nanoseconds) {
     LOG_TRACE(Kernel_SVC, "called nanoseconds=%lld", nanoseconds);
 
+    // Don't attempt to yield execution if there are no available threads to run,
+    // this way we avoid a useless reschedule to the idle thread.
+    if (nanoseconds == 0 && !Kernel::HaveReadyThreads())
+        return;
+
     // Sleep current thread and check for next thread to schedule
     Kernel::WaitCurrentThread_Sleep();
 
@@ -897,7 +902,11 @@ static ResultCode CreateMemoryBlock(Kernel::Handle* out_handle, u32 addr, u32 si
         return ResultCode(ErrorDescription::InvalidCombination, ErrorModule::OS,
                           ErrorSummary::InvalidArgument, ErrorLevel::Usage);
 
-    if (addr < Memory::PROCESS_IMAGE_VADDR || addr + size > Memory::SHARED_MEMORY_VADDR_END) {
+    // TODO(Subv): Processes with memory type APPLICATION are not allowed
+    // to create memory blocks with addr = 0, any attempts to do so
+    // should return error 0xD92007EA.
+    if ((addr < Memory::PROCESS_IMAGE_VADDR || addr + size > Memory::SHARED_MEMORY_VADDR_END) &&
+        addr != 0) {
         return ResultCode(ErrorDescription::InvalidAddress, ErrorModule::OS,
                           ErrorSummary::InvalidArgument, ErrorLevel::Usage);
     }
