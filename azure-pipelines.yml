@@ -1,0 +1,40 @@
+trigger:
+- master
+
+resources:
+  containers:
+  - container: linux_fresh
+    # options: -v "$HOME/.ccache":/root/.ccache
+    image: citraemu/build-environments:linux-fresh
+  - container: linux_frozen
+    # options: -v "$HOME/.ccache":/root/.ccache
+    image: citraemu/build-environments:linux-frozen
+  - container: linux_mingw
+    # options: -v "$HOME/.ccache":/root/.ccache
+    image: citraemu/build-environments:linux-mingw
+  - container: linux_clang_format
+    image: citraemu/build-environments:linux-clang-format
+
+jobs:
+- job: LinuxContainerBuilds
+  pool:
+    vmImage: 'ubuntu-16.04'
+
+  container: $[ variables['containerResource'] ]
+
+  strategy:
+    matrix:
+      linux-fresh:
+        containerResource: linux_fresh
+      linux-frozen:
+        containerResource: linux_frozen
+      linux-mingw:
+        containerResource: linux_mingw
+      clang-format:
+        containerResource: linux_clang_format
+
+  steps:
+  - bash: |
+      git submodule update --init --recursive
+      /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
+    condition: eq( variables['Agent.OS'], 'Linux' )
