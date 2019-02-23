@@ -1,0 +1,7 @@
+steps:
+  - task: GithubRelease@0
+    displayName: 'Publish to GitHub Release'
+    inputs:
+      githubConnection: liushuyu-release
+      repositoryName: liushuyu/citra
+      assets: artifacts/*
