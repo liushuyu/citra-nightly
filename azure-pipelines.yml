@@ -14,6 +14,8 @@ resources:
     image: citraemu/build-environments:linux-mingw
   - container: linux_clang_format
     image: citraemu/build-environments:linux-clang-format
+  - container: linux_transifex
+    image: citraemu/build-environments:linux-transifex
 
 jobs:
 - job: LinuxContainerBuilds
@@ -34,9 +36,10 @@ jobs:
         containerResource: linux_clang_format
 
   steps:
-  - bash: |
-      git submodule update --init --recursive
-      /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
+  - bash: git submodule update --init --recursive
+    displayName: 'Fetch submodules'
+  - bash: /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
+    displayName: 'Build Citra'
 
 - job: macOSNativeBuilds
   pool:
@@ -45,7 +48,9 @@ jobs:
   steps:
   - bash: ./.travis/macos/deps.sh
     displayName: 'Install dependencies'
-  - bash: |
-      git submodule update --init --recursive
-      ./.travis/macos/build.sh
+  - bash: git submodule update --init --recursive
+    displayName: 'Fetch submodules'
+  - bash: sudo xcode-select -s /Applications/Xcode_10.1.app/Contents/Developer
+    displayName: 'Select XCode version'
+  - bash: ./.travis/macos/build.sh
     displayName: 'Build Citra'
