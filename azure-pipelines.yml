@@ -1,6 +1,7 @@
 trigger:
 - master
 
+# variable definitions
 resources:
   containers:
   - container: linux_fresh
@@ -14,10 +15,9 @@ resources:
     image: citraemu/build-environments:linux-mingw
   - container: linux_clang_format
     image: citraemu/build-environments:linux-clang-format
-  - container: linux_transifex
-    image: citraemu/build-environments:linux-transifex
 
 jobs:
+# Linux Docker container builders
 - job: LinuxContainerBuilds
   pool:
     vmImage: 'ubuntu-16.04'
@@ -41,6 +41,29 @@ jobs:
   - bash: /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
     displayName: 'Build Citra'
 
+# Transifex translation synchronization job
+- job: LinuxTransifexSync
+  # Azure pipeline's condition expression is very wired
+  # the following means:
+  # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
+  condition: |
+    and(eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+        eq(variables['Build.Repository.Uri'],'https://github.com/citra-emu/citra.git'),
+        eq(variables['Build.Reason'], 'IndividualCI'))
+  pool:
+    vmImage: 'ubuntu-16.04'
+  # we don't use Docker integration here since azure pipeline
+  # Docker integration requires guest Docker image to use GLibc
+  steps:
+  - bash: git submodule update --init --recursive
+    displayName: 'Fetch submodules'
+  - bash: /bin/bash -ex ./.travis/transifex/build.sh
+    # set tx_token variable in the control panel and uncomment the following
+    # env:
+    #   TRANSIFEX_API_TOKEN: $(tx_token)
+    displayName: 'Push translations'
+
+# macOS native build
 - job: macOSNativeBuilds
   pool:
     vmImage: 'macOS-10.13'
