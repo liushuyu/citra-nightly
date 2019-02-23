@@ -1,0 +1,7 @@
+steps:
+  - task: GithubRelease@0
+    displayName: 'Publish to GitHub Release'
+    inputs:
+      githubConnection: test
+      repositoryName: liushuyu/citra
+      assets: $(build.artifactstagingdirectory)/artifacts/*

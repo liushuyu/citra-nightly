@@ -37,16 +37,17 @@ jobs:
     displayName: 'Fetch submodules'
   - bash: /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
     displayName: 'Build Citra'
+  - bash: /bin/bash -ex ./.travis/${AGENT_JOBNAME}/upload.sh
+    displayName: 'Pack Citra'
+    condition: |
+      and(succeeded(),
+        notIn(variables['containerResource'], 'linux_clang_format', 'linux_frozen')
+      )
+  # - template: azure-deploy.yml
 
 # Transifex translation synchronization job
 - job: LinuxTransifexSync
-  # Azure pipeline's condition expression is very wired
-  # the following means:
-  # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
-  condition: |
-    and(eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-        eq(variables['Build.Repository.Uri'],'https://github.com/citra-emu/citra.git'),
-        eq(variables['Build.Reason'], 'IndividualCI'))
+
   pool:
     vmImage: 'ubuntu-16.04'
   # we don't use Docker integration here since azure pipeline
@@ -59,6 +60,16 @@ jobs:
     # env:
     #   TRANSIFEX_API_TOKEN: $(tx_token)
     displayName: 'Push translations'
+    # Azure pipeline's condition expression is very wired
+    # the following means:
+    # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
+    # also, 'Build.Repository.Name' is not available prior to the 'steps' section
+    condition: |
+      and(
+        eq(variables['Build.Repository.Name'], 'citra-emu/citra'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+        in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
+      )
 
 # macOS native build
 - job: macOSNativeBuilds
@@ -74,6 +85,10 @@ jobs:
     displayName: 'Select XCode version'
   - bash: ./.travis/macos/build.sh
     displayName: 'Build Citra'
+  - bash: /bin/bash -ex ./.travis/macos/upload.sh
+    displayName: 'Pack Citra'
+    condition: succeeded()
+  # - template: azure-deploy.yml
 
 # Windows native build
 - job: MSVCNativeBuilds
