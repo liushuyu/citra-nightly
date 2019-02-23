@@ -37,4 +37,15 @@ jobs:
   - bash: |
       git submodule update --init --recursive
       /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
-    condition: eq( variables['Agent.OS'], 'Linux' )
+
+- job: macOSNativeBuilds
+  pool:
+    vmImage: 'macOS-10.13'
+
+  steps:
+  - bash: ./.travis/macos/deps.sh
+    displayName: 'Install dependencies'
+  - bash: |
+      git submodule update --init --recursive
+      ./.travis/macos/build.sh
+    displayName: 'Build Citra'
