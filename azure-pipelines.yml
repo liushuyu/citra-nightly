@@ -126,3 +126,35 @@ jobs:
     inputs:
       artifactName: 'windows-msvc'
       targetPath: $(Build.ArtifactStagingDirectory)/artifacts
+
+# LinuxFlatPak build
+- job: LinuxFlatPak
+
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: citraemu/build-environments:linux-flatpak
+  # we don't use Docker integration here since azure pipeline
+  # Docker integration requires guest Docker image to use GLibc
+  steps:
+  - bash: git submodule update --init --recursive
+    displayName: 'Fetch submodules'
+  - bash: /bin/bash -ex ./.travis/linux-flatpak/generate-data.sh
+    # set tx_token variable in the control panel and uncomment the following
+    # env:
+    #   TRANSIFEX_API_TOKEN: $(tx_token)
+    displayName: 'Generate Flatpak metadata'
+  - bash: |
+      CITRA_SRC_DIR="$(pwd)"
+      BUILD_DIR="$CITRA_SRC_DIR/build"
+      STATE_DIR="$CITRA_SRC_DIR/.flatpak-builder"
+      flatpak-builder --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --repo="$CITRA_SRC_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"
+    displayName: 'Build Citra Flatpak'
+    # Azure pipeline's condition expression is very wired
+    # the following means:
+    # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
+    # also, 'Build.Repository.Name' is not available prior to the 'steps' section
+    # condition: |
+    #   and(
+    #     eq(variables['Build.Repository.Name'], 'citra-emu/citra'),
+    #     in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
+    #   )
