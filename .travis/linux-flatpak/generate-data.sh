@@ -107,7 +107,7 @@ cat > /tmp/org.citra.$REPO_NAME.json <<EOF
                 {
                     "type": "git",
                     "url": "https://github.com/citra-emu/$REPO_NAME.git",
-                    "branch": "$TRAVIS_BRANCH",
+                    "branch": "master",
                     "disable-shallow-clone": true
                 },
                 {
@@ -122,3 +122,4 @@ EOF
 
 # Call the script to build citra
 # /bin/bash -ex /citra/.travis/linux-flatpak/docker.sh
+#${BUILD_SOURCEBRANCHNAME}

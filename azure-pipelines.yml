@@ -1,153 +1,29 @@
-# variable definitions
 resources:
   containers:
-  - container: linux_fresh
-    # options: -v "$HOME/.ccache":/root/.ccache
-    image: citraemu/build-environments:linux-fresh
-  - container: linux_frozen
-    # options: -v "$HOME/.ccache":/root/.ccache
-    image: citraemu/build-environments:linux-frozen
-  - container: linux_mingw
-    # options: -v "$HOME/.ccache":/root/.ccache
-    image: citraemu/build-environments:linux-mingw
-  - container: linux_clang_format
-    image: citraemu/build-environments:linux-clang-format
+    - container: linux_flatpak
+      image: "citraemu/build-environments:linux-flatpak"
+      options: --privileged
 
 jobs:
-# Linux Docker container builders
-- job: LinuxContainerBuilds
-  pool:
-    vmImage: 'ubuntu-16.04'
-
-  container: $[ variables['containerResource'] ]
-
-  strategy:
-    matrix:
-      linux-fresh:
-        containerResource: linux_fresh
-      linux-frozen:
-        containerResource: linux_frozen
-      linux-mingw:
-        containerResource: linux_mingw
-      clang-format:
-        containerResource: linux_clang_format
-
-  steps:
-  - bash: git submodule update --init --recursive
-    displayName: 'Fetch submodules'
-  - bash: /bin/bash -ex ./.travis/${AGENT_JOBNAME}/docker.sh
-    displayName: 'Build Citra'
-  - bash: /bin/bash -ex ./.travis/${AGENT_JOBNAME}/upload.sh
-    displayName: 'Pack Citra'
-    condition: |
-      and(succeeded(),
-        notIn(variables['containerResource'], 'linux_clang_format', 'linux_frozen')
-      )
-  - task: PublishPipelineArtifact@0
-    displayName: 'Upload to artifact depot'
-    # have to repeat the condition here since az-pipelines does not have
-    # a 'skipped' status (skipped = succeeded)
-    condition: |
-      and(succeeded(),
-        notIn(variables['containerResource'], 'linux_clang_format', 'linux_frozen')
-      )
-    inputs:
-      artifactName: $(Agent.JobName)
-      targetPath: $(Build.ArtifactStagingDirectory)/artifacts
-
-# Transifex translation synchronization job
-- job: LinuxTransifexSync
-
-  pool:
-    vmImage: 'ubuntu-16.04'
-  # we don't use Docker integration here since azure pipeline
-  # Docker integration requires guest Docker image to use GLibc
-  steps:
-  - bash: git submodule update --init --recursive
-    displayName: 'Fetch submodules'
-  - bash: /bin/bash -ex ./.travis/transifex/build.sh
-    # set tx_token variable in the control panel and uncomment the following
-    # env:
-    #   TRANSIFEX_API_TOKEN: $(tx_token)
-    displayName: 'Push translations'
-    # Azure pipeline's condition expression is very wired
-    # the following means:
-    # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
-    # also, 'Build.Repository.Name' is not available prior to the 'steps' section
-    condition: |
-      and(
-        eq(variables['Build.Repository.Name'], 'citra-emu/citra'),
-        eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-        in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
-      )
-
-# macOS native build
-- job: macOSNativeBuilds
-  pool:
-    vmImage: 'macOS-10.13'
-
-  steps:
-  - bash: ./.travis/macos/deps.sh
-    displayName: 'Install dependencies'
-  - bash: git submodule update --init --recursive
-    displayName: 'Fetch submodules'
-  - bash: sudo xcode-select -s /Applications/Xcode_10.1.app/Contents/Developer
-    displayName: 'Select XCode version'
-  - bash: ./.travis/macos/build.sh
-    displayName: 'Build Citra'
-  - bash: /bin/bash -ex ./.travis/macos/upload.sh
-    displayName: 'Pack Citra'
-    condition: succeeded()
-  - task: PublishPipelineArtifact@0
-    condition: succeeded()
-    displayName: 'Upload to artifact depot'
-    inputs:
-      artifactName: 'macos'
-      targetPath: $(Build.ArtifactStagingDirectory)/artifacts
-
-# Windows native build
-- job: MSVCNativeBuilds
-  pool:
-    vmImage: 'vs2017-win2016'
-
-  steps:
-  - bash: /bin/bash -ex ./.travis/windows-msvc/deps.sh
-    displayName: 'Install dependencies'
-  - bash: git submodule update --init --recursive
-    displayName: 'Fetch submodules'
-  - bash: /bin/bash -ex ./.travis/windows-msvc/build.sh
-    displayName: 'Build Citra'
-  - bash: /bin/bash -ex ./.travis/windows-msvc/upload.sh
-    displayName: 'Pack Citra'
-    condition: succeeded()
-  - task: PublishPipelineArtifact@0
-    condition: succeeded()
-    displayName: 'Upload to artifact depot'
-    inputs:
-      artifactName: 'windows-msvc'
-      targetPath: $(Build.ArtifactStagingDirectory)/artifacts
-
 # LinuxFlatPak build
 - job: LinuxFlatPak
 
   pool:
     vmImage: 'ubuntu-16.04'
-  container: citraemu/build-environments:linux-flatpak
-  # we don't use Docker integration here since azure pipeline
-  # Docker integration requires guest Docker image to use GLibc
+  container: linux_flatpak
   steps:
-  - bash: git submodule update --init --recursive
-    displayName: 'Fetch submodules'
   - bash: /bin/bash -ex ./.travis/linux-flatpak/generate-data.sh
     # set tx_token variable in the control panel and uncomment the following
     # env:
     #   TRANSIFEX_API_TOKEN: $(tx_token)
     displayName: 'Generate Flatpak metadata'
   - bash: |
+      REPO_NAME=$(echo $BUILD_REPOSITORY_NAME | cut -d'/' -f 2)
       CITRA_SRC_DIR="$(pwd)"
+      REPO_DIR="$CITRA_SRC_DIR/repo"
       BUILD_DIR="$CITRA_SRC_DIR/build"
       STATE_DIR="$CITRA_SRC_DIR/.flatpak-builder"
-      flatpak-builder --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --repo="$CITRA_SRC_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"
+      flatpak-builder --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --repo="$REPO_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"
     displayName: 'Build Citra Flatpak'
     # Azure pipeline's condition expression is very wired
     # the following means:
