@@ -17,20 +17,14 @@ jobs:
     # env:
     #   TRANSIFEX_API_TOKEN: $(tx_token)
     displayName: 'Generate Flatpak metadata'
-  - bash: |
-      REPO_NAME=$(echo $BUILD_REPOSITORY_NAME | cut -d'/' -f 2)
-      CITRA_SRC_DIR="$(pwd)"
-      REPO_DIR="$CITRA_SRC_DIR/repo"
-      BUILD_DIR="$CITRA_SRC_DIR/build"
-      STATE_DIR="$CITRA_SRC_DIR/.flatpak-builder"
-      flatpak-builder --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --repo="$REPO_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"
+  - bash: /bin/bash -ex ./.travis/linux-flatpak/docker.sh
     displayName: 'Build Citra Flatpak'
-    # Azure pipeline's condition expression is very wired
+    # Azure pipeline's condition expression is very weird
     # the following means:
     # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
     # also, 'Build.Repository.Name' is not available prior to the 'steps' section
-    # condition: |
-    #   and(
-    #     eq(variables['Build.Repository.Name'], 'citra-emu/citra'),
-    #     in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
-    #   )
+  condition: |
+    and(
+      eq(variables['System.TeamProjectId'], 'citra-emu/citra'),
+      in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
+    )
