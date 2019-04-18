@@ -16,9 +16,9 @@ GPG_KEY="/tmp/gpg.key"
 # tar -C /tmp -xvf $KEYS_ARCHIVE
 
 # Configure SSH keys
-# eval "$(ssh-agent -s)"
-# chmod -R 600 "$HOME/.ssh"
-# chown -R root "$HOME/.ssh"
+eval "$(ssh-agent -s)"
+mkdir -p "$HOME/.ssh"
+chmod 0700 "$HOME/.ssh"
 # chmod 600 "$SSH_KEY"
 # ssh-add "$SSH_KEY"
 # echo "[$FLATPAK_SSH_HOSTNAME]:$FLATPAK_SSH_PORT,[$(dig +short $FLATPAK_SSH_HOSTNAME)]:$FLATPAK_SSH_PORT $FLATPAK_SSH_PUBLIC_KEY" > ~/.ssh/known_hosts
@@ -27,7 +27,7 @@ GPG_KEY="/tmp/gpg.key"
 # gpg2 --import "$GPG_KEY"
 
 # Mount our flatpak repository
-# mkdir -p "$REPO_DIR"
+mkdir -p "$REPO_DIR"
 # sshfs "$FLATPAK_SSH_USER@$FLATPAK_SSH_HOSTNAME:$SSH_DIR" "$REPO_DIR" -C -p "$FLATPAK_SSH_PORT" -o IdentityFile="$SSH_KEY"
 
 # Build the citra flatpak
