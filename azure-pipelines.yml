@@ -31,4 +31,4 @@ jobs:
     # the following means:
     # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
     # also, 'Build.Repository.Name' is not available prior to the 'steps' section
-  condition: eq(variables['System.TeamProjectId'], '378e0e5c-b2fc-4735-a473-fc2d60e2493b')
+    condition: eq(variables['System.TeamProjectId'], '378e0e5c-b2fc-4735-a473-fc2d60e2493b')
