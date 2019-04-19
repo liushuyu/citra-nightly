@@ -1,3 +1,9 @@
+trigger:
+  tags:
+    include: ['*']
+  branches:
+    include: ['*']
+
 resources:
   containers:
     - container: linux_flatpak
@@ -13,8 +19,9 @@ jobs:
   container: linux_flatpak
   steps:
   - bash: |
-      echo '##vso[task.complete result=Skipped]'
-      echo 'another thing'
+      echo "Tagname: ${TAGNAME}"
+    env:
+      TAGNAME: $(tagname)
   - bash: /bin/bash -ex ./.travis/linux-flatpak/generate-data.sh
     # set tx_token variable in the control panel and uncomment the following
     # env:
@@ -26,8 +33,4 @@ jobs:
     # the following means:
     # Build.SourceBranch == 'refs/heads/master' && Build.Repository.Uri == 'citra-emu/citra' && PUSH EVENT (IndividualCI)
     # also, 'Build.Repository.Name' is not available prior to the 'steps' section
-  condition: |
-    and(
-      eq(variables['System.TeamProjectId'], '378e0e5c-b2fc-4735-a473-fc2d60e2493b'),
-      in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
-    )
+  # condition: eq(variables['System.TeamProjectId'], '378e0e5c-b2fc-4735-a473-fc2d60e2493b')
