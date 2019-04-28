@@ -28,12 +28,17 @@ jobs:
     inputs:
       secureFile: flatpak_ssh.key
   - bash: /bin/bash -ex ./.travis/linux-flatpak/docker.sh
-    displayName: 'Build and upload Citra Flatpak'
+    displayName: 'Build Citra Flatpak'
     # secret variables are used here
     env:
+      FLATPAK_GPG_KEY_ID: $(FLATPAK_GPG_KEY_ID)
+      AZP_TMP_DIR: $(Agent.TempDirectory) # secure files are downloaded to here
+  - bash: /bin/bash -ex ./.travis/linux-flatpak/upload.sh
+    displayName: "Upload Citra Flatpak"
+    env:
+      FLATPAK_GPG_KEY_ID: $(FLATPAK_GPG_KEY_ID)
       FLATPAK_SSH_HOSTNAME: $(FLATPAK_SSH_HOSTNAME)
       FLATPAK_SSH_HOST_FINGERPRINT: $(FLATPAK_SSH_HOST_FINGERPRINT)
-      FLATPAK_GPG_KEY_ID: $(FLATPAK_GPG_KEY_ID)
       FLATPAK_SSH_PORT: $(FLATPAK_SSH_PORT)
       FLATPAK_SSH_USER: $(FLATPAK_SSH_USER)
       AZP_TMP_DIR: $(Agent.TempDirectory) # secure files are downloaded to here
