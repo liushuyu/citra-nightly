@@ -54,17 +54,14 @@ cat > /tmp/org.citra.$REPO_NAME.json <<EOF
             "--share=network"
         ],
         "env": {
-            "CI": "$CI",
-            "TRAVIS": "$TRAVIS",
-            "CONTINUOUS_INTEGRATION": "$CONTINUOUS_INTEGRATION",
-            "TRAVIS_BRANCH": "$TRAVIS_BRANCH",
-            "TRAVIS_BUILD_ID": "$TRAVIS_BUILD_ID",
-            "TRAVIS_BUILD_NUMBER": "$TRAVIS_BUILD_NUMBER",
-            "TRAVIS_COMMIT": "$TRAVIS_COMMIT",
-            "TRAVIS_JOB_ID": "$TRAVIS_JOB_ID",
-            "TRAVIS_JOB_NUMBER": "$TRAVIS_JOB_NUMBER",
-            "TRAVIS_REPO_SLUG": "$BUILD_REPOSITORY_NAME",
-            "TRAVIS_TAG": "$TRAVIS_TAG"
+            "CI": "$TF_BUILD",
+            "AZP": "$TF_BUILD",
+            "AZP_BRANCH": "$BUILD_SOURCEBRANCHNAME",
+            "AZP_BUILD_ID": "$BUILD_BUILDID",
+            "AZP_BUILD_NUMBER": "$BUILD_BUILDNUMBER",
+            "AZP_COMMIT": "$BUILD_SOURCEVERSION",
+            "AZP_REPO_NAME": "$BUILD_REPOSITORY_NAME",
+            "AZP_TAG": "$BUILD_SOURCEBRANCH"
         }
     },
     "finish-args": [
