@@ -104,8 +104,8 @@ cat > /tmp/org.citra.$REPO_NAME.json <<EOF
             "sources": [
                 {
                     "type": "git",
-                    "url": "https://github.com/citra-emu/$REPO_NAME.git",
-                    "branch": "${BUILD_SOURCEBRANCHNAME}",
+                    "url": "https://github.com/liushuyu/citra.git",
+                    "branch": "az-flatpak",
                     "disable-shallow-clone": true
                 },
                 {

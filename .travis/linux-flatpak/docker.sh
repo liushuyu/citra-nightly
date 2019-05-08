@@ -9,7 +9,7 @@ STATE_DIR="$CITRA_SRC_DIR/.flatpak-builder"
 GPG_KEY="${AZP_TMP_DIR}/flatpak_gpg.key"
 
 # Configure GPG keys
-gpg2 --import "$GPG_KEY"
+# gpg2 --import "$GPG_KEY"
 
 mkdir -p "$REPO_DIR"
 
@@ -18,4 +18,4 @@ mkdir -p "$REPO_DIR"
 # ln -sv /root/.ccache "$STATE_DIR/ccache"
 
 # Build the citra flatpak
-sudo flatpak-builder -v --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --gpg-sign="$FLATPAK_GPG_KEY_ID" --repo="$REPO_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"
+sudo flatpak-builder -v --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --repo="$REPO_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"

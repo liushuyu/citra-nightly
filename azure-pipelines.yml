@@ -28,7 +28,7 @@ jobs:
   #   displayName: 'Fetch secure file'
   #   inputs:
   #     secureFile: flatpak_ssh.key
-  - bash: cat /tmp/*.json
+  - bash: /bin/bash -ex ./.travis/linux-flatpak/docker.sh
     displayName: 'Build Citra Flatpak'
     # secret variables are used here
     # env:

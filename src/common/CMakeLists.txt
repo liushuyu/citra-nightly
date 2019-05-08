@@ -15,6 +15,7 @@ if ($ENV{CI})
   elseif($ENV{AZP})
     set(BUILD_REPOSITORY $ENV{AZP_REPO_NAME})
     set(BUILD_TAG $ENV{AZP_TAG})
+    message(STATUS "Azure Pipelines: ${BUILD_REPOSITORY} @ ${BUILD_TAG}")
   endif()
   # regex capture the string nightly or canary into CMAKE_MATCH_1
   string(REGEX MATCH "citra-emu/citra-?(.*)" OUTVAR ${BUILD_REPOSITORY})
