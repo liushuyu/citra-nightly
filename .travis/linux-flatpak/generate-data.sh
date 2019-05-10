@@ -60,7 +60,7 @@ cat > /tmp/org.citra.$REPO_NAME.json <<EOF
             "AZP_BUILD_ID": "$BUILD_BUILDID",
             "AZP_BUILD_NUMBER": "$BUILD_BUILDNUMBER",
             "AZP_COMMIT": "$BUILD_SOURCEVERSION",
-            "AZP_REPO_NAME": "$BUILD_REPOSITORY_NAME",
+            "AZP_REPO_NAME": "citra-emu/citra-canary",
             "AZP_TAG": "$BUILD_SOURCEBRANCH"
         }
     },
