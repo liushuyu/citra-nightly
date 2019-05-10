@@ -19,3 +19,6 @@ mkdir -p "$REPO_DIR"
 
 # Build the citra flatpak
 sudo flatpak-builder -v --jobs=4 --ccache --force-clean --state-dir="$STATE_DIR" --repo="$REPO_DIR" "$BUILD_DIR" "/tmp/org.citra.$REPO_NAME.json"
+
+# export to bundle
+flatpak build-bundle "$REPO_DIR" "${BUILD_ARTIFACTSTAGINGDIRECTORY}/citra.flatpak" org.citra.citra-canary

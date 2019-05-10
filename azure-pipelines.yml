@@ -2,7 +2,9 @@ trigger:
   branches:
     include:
       - master
-      - az-flatpak
+  tags:
+    include:
+      - '*'
 
 resources:
   containers:
@@ -34,6 +36,12 @@ jobs:
     # env:
     #   FLATPAK_GPG_KEY_ID: $(FLATPAK_GPG_KEY_ID)
     #   AZP_TMP_DIR: $(Agent.TempDirectory) # secure files are downloaded to here
+  - task: PublishPipelineArtifact@0
+    condition: succeeded()
+    displayName: 'Upload to artifact depot'
+    inputs:
+      artifactName: 'flatpak'
+      targetPath: $(Build.ArtifactStagingDirectory)
   # - bash: /bin/bash -ex ./.travis/linux-flatpak/upload.sh
   #   displayName: "Upload Citra Flatpak"
   #   env:
