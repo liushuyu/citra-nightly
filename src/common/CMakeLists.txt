@@ -19,6 +19,7 @@ if ($ENV{CI})
   endif()
   # regex capture the string nightly or canary into CMAKE_MATCH_1
   string(REGEX MATCH "citra-emu/citra-?(.*)" OUTVAR ${BUILD_REPOSITORY})
+  message(STATUS "CMAKE_MATCH_1: ${CMAKE_MATCH_1}")
   if (${CMAKE_MATCH_COUNT} GREATER 0)
     # capitalize the first letter of each word in the repo name.
     string(REPLACE "-" ";" REPO_NAME_LIST ${CMAKE_MATCH_1})
@@ -29,6 +30,7 @@ if ($ENV{CI})
       set(REPO_NAME "${REPO_NAME}${FIRST_LETTER}${REMAINDER}")
     endforeach()
     if (BUILD_TAG)
+      message(STATUS "BUILD_TAG: ${BUILD_TAG}")
       string(REGEX MATCH "${CMAKE_MATCH_1}-([0-9]+)" OUTVAR ${BUILD_TAG})
       if (${CMAKE_MATCH_COUNT} GREATER 0)
         set(BUILD_VERSION ${CMAKE_MATCH_1})
@@ -37,6 +39,7 @@ if ($ENV{CI})
         # This leaves a trailing space on the last word, but we actually want that
         # because of how it's styled in the title bar.
         set(BUILD_FULLNAME "${REPO_NAME} ${BUILD_VERSION} ")
+        message(STATUS "Title name: ${BUILD_FULLNAME}")
       else()
         set(BUILD_FULLNAME "")
       endif()
