@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-. .travis/common/pre-upload.sh
+. .ci/common/pre-upload.sh
 
 REV_NAME="citra-osx-${GITDATE}-${GITREV}"
 ARCHIVE_NAME="${REV_NAME}.tar.gz"
@@ -26,4 +26,4 @@ chmod +x ${REV_NAME}/citra-qt.app/Contents/MacOS/citra-qt
 # Verify loader instructions
 find "$REV_NAME" -exec otool -L {} \;
 
-. .travis/common/post-upload.sh
+. .ci/common/post-upload.sh
