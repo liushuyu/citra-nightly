@@ -1,0 +1,59 @@
+name: citra-publish
+
+on:
+  schedule:
+    - cron: '7 0 * * *'
+  workflow_dispatch:
+    inputs:
+      nightly:
+        description: 'Whether trigger a nightly build (true/false)'
+        required: false
+        default: 'true'
+      canary:
+        description: 'Whether trigger a canary build (true/false)'
+        required: false
+        default: 'true'
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v5
+        id: check-changes
+        name: 'Check for new changes'
+        with:
+          script: |
+            if (payload.inputs.nightly === 'true') return true;
+            const delta = new Date() - new Date(payload.repository.pushed_at);
+            return delta <= 86400000;
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v5
+        id: check-changes
+        name: 'Check for new changes'
+        with:
+          script: |
+            if (payload.inputs.canary === 'true') return true;
+            const delta = new Date() - new Date(payload.repository.pushed_at);
+            if (delta <= 86400000) return true;
+            const query = `query($owner:String!, $name:String!, $label:String!) {
+              repository(owner:$owner, name:$name) {
+                pullRequests(labels: [$label], first: 100) {
+                  nodes {
+                    number
+                    headRepository {
+                      pushedAt
+                    }
+                  }
+                }
+              }
+            }`;
+            const variables = {
+              owner: context.repo.owner,
+              name: context.repo.repo,
+              label: 'canary-merge'
+            }
+            const result = await github.graphql(query, variables)
+            console.log(result)
+            return delta <= 86400000;
